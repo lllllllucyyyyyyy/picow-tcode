@@ -31,7 +31,7 @@ static uint8_t adv_data[] = {
     // Flags general discoverable
     0x02, BLUETOOTH_DATA_TYPE_FLAGS, APP_AD_FLAGS,
     // Name
-    0x05, BLUETOOTH_DATA_TYPE_COMPLETE_LOCAL_NAME, 'L', 'V', 'S', '-',
+    0x05, BLUETOOTH_DATA_TYPE_COMPLETE_LOCAL_NAME, 'p', 'i', 'c', 'o',
     // Custom Service UUID
     0x03, BLUETOOTH_DATA_TYPE_COMPLETE_LIST_OF_16_BIT_SERVICE_CLASS_UUIDS, 0x10, 0xff,
 };
@@ -49,7 +49,7 @@ static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *pack
             break;
         case ATT_EVENT_CAN_SEND_NOW:
             printf("notif sent");
-            att_server_notify(con_handle, ATT_CHARACTERISTIC_50300003_0023_4bd4_bbd5_a6920e4c5653_01_VALUE_HANDLE, (uint8_t*) val_str, val_len);
+            att_server_notify(con_handle, ATT_CHARACTERISTIC_f0dac9f1_06b0_4725_a80a_ff083a09a857_01_VALUE_HANDLE, (uint8_t*) val_str, val_len);
             break;
         default:
             break;
@@ -60,7 +60,7 @@ static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t a
 {
     UNUSED(connection_handle);
 
-    if (att_handle == ATT_CHARACTERISTIC_50300003_0023_4bd4_bbd5_a6920e4c5653_01_VALUE_HANDLE)
+    if (att_handle == ATT_CHARACTERISTIC_f0dac9f1_06b0_4725_a80a_ff083a09a857_01_VALUE_HANDLE)
     {
         val_len = snprintf(val_str, sizeof(val_str), "BTstack counter %04u", val);
         printf("sent packet");
@@ -76,13 +76,13 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
     UNUSED(buffer_size);
 
     // Enable/disable notifications
-    if (att_handle == ATT_CHARACTERISTIC_50300003_0023_4bd4_bbd5_a6920e4c5653_01_CLIENT_CONFIGURATION_HANDLE)
+    if (att_handle == ATT_CHARACTERISTIC_f0dac9f1_06b0_4725_a80a_ff083a09a857_01_CLIENT_CONFIGURATION_HANDLE)
     {
         le_notification_enabled = little_endian_read_16(buffer, 0);
         con_handle = connection_handle; 
     }
 
-    if (att_handle == ATT_CHARACTERISTIC_50300002_0023_4bd4_bbd5_a6920e4c5653_01_VALUE_HANDLE)
+    if (att_handle == ATT_CHARACTERISTIC_f0dac9f2_06b0_4725_a80a_ff083a09a857_01_VALUE_HANDLE)
     {
         printf_hexdump(buffer, buffer_size);
     }

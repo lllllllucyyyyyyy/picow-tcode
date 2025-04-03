@@ -1,2 +1,5 @@
 # 4/3/25
 This project has been underway for a week or so now, but I decided to keep a log to track progress and such for those who want to work on it. As it stands now, the code is able to show up in the intiface application as a lovense device, but given that there is little to no actual implementation of nay neccesary apis that lovense uses, it threw warnings, as expected. The hard part seems to be over with, onto adding actual functionality.
+
+## later in the day
+Turns out the I was editing the wrong file, I was editing the user file instead of the device file. oh well. Device config file, device name, and a couple other things are getting updated.
