@@ -1,0 +1,35 @@
+{
+    "version": {
+      "major": 3,
+      "minor": 0
+    },
+    "protocols":{
+      "tcode-v03": {
+        "btle": {
+          "names": [
+              "Pico"
+          ],
+          "services": {
+              "0000FF10-0000-1000-8000-00805F9B34FB": {
+                  "tx": "0000FF11-0000-1000-8000-00805F9B34FB",
+                  "rx": "0000FF12-0000-1000-8000-00805F9B34FB"
+              }
+          }
+        },
+        "defaults": {
+          "name": "TCode v0.3",
+          "messages": {
+            "ScalarCmd": [
+              {
+                  "StepRange": [
+                      0,
+                      100
+                  ],
+                  "ActuatorType": "Vibrate"
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
