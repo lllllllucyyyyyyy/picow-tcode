@@ -38,5 +38,6 @@
     "raspberry-pi-pico.ninjaPath": "${HOME}/.pico-sdk/ninja/v1.12.1/ninja",
     "files.associations": {
         "string.h": "c"
-    }
+    },
+    "C_Cpp.errorSquiggles": "disabled"
 }

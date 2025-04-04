@@ -25,6 +25,9 @@ static int val = 5;
 static char val_str[30];
 static int val_len;
 
+void* string_get_callback;
+//Zack Freedman reference?
+
 #define APP_AD_FLAGS 0x06
 
 
@@ -120,6 +123,9 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
         case ATT_CHARACTERISTIC_F0DAC9F2_06B0_4725_A80A_FF083A09A857_01_VALUE_HANDLE:
             printf("Write: transaction mode %u, offset %u, data (%u bytes): ", transaction_mode, offset, buffer_size);
             printf_hexdump(buffer, buffer_size);
+            printf(buffer);
+            uint8_t* data;
+            data = buffer;
             break;
         default:
             break;
@@ -170,6 +176,8 @@ int main()
 	    
     // Run our Bluetooth app
     printf("running");
-    btstack_run_loop_execute();
-    //while(1) ;
+    //btstack_run_loop_execute();
+    while(true) {      
+        sleep_ms(1000);
+    }
 }
