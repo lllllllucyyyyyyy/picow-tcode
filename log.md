@@ -11,3 +11,6 @@ I was wondering why I couldn't get the program to detect writes... turns out it'
 # 4/4/25
 Turns out literally printing the incoming buffer let me see the strings coming in. Copying that should let me use the contents.
 //TODO: separate bluetooth commands into their own file, start decoding incoming t code.
+
+## later
+The t-code decoder? is coming along well. I felt like spitting out a custom object with all the details would be the easiest to implement across various devices without overcomplicating things tooo much. I was considering callbacks, but an object is a bit cleaner to implement on the device code end.
