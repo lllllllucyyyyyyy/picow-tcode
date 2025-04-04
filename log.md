@@ -3,3 +3,7 @@ This project has been underway for a week or so now, but I decided to keep a log
 
 ## later in the day
 Turns out the I was editing the wrong file, I was editing the user file instead of the device file. oh well. Device config file, device name, and a couple other things are getting updated.
+
+## even later
+I was wondering why I couldn't get the program to detect writes... turns out it's the dynamic gatt trait? (idk what they're called, but its in the same spot as where youd put write and notify and so on) that lets the program actually use that data. That was a fun half hour of debugging. 
+//TODO: get a utf-8 string out of whatever garbled nonsense the bluetooth writes send, and spew it into the console. baby steps :)
