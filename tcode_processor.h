@@ -1,4 +1,6 @@
 #include <string.h>
+#include <stdio.h>
+#include "pico/stdlib.h"
 
 enum axis_t {
     LINEAR,
@@ -8,14 +10,14 @@ enum axis_t {
 };
 
 enum time_command_t {
-    MAG_TIME,
-    MAG_SPEED
+    MAGNITUDE_TIME,
+    MAGNITUDE_SPEED
 };
 
 struct tcode_command_t {
     enum axis_t axis;
     int channel;
-    double mag;
+    float magnitude;
     enum time_command_t time_command;
     int time;
 };
@@ -23,9 +25,9 @@ struct tcode_command_t {
 
 struct tcode_command_t process_tcode(uint8_t* input, uint16_t input_length) {
     struct tcode_command_t command;
-    char* buffer0 = "";
-    char* buffer1 = "";
-    int buffer_which = 0;
+    char buffer0[4];
+    char buffer1[6];
+    bool buffer_which = false;
     char* input_buffer = input;
     char axis = input[0];
     switch(axis) {
@@ -48,7 +50,7 @@ struct tcode_command_t process_tcode(uint8_t* input, uint16_t input_length) {
         default:
             break;
     }
-    command.channel = (double)input[1];
+    command.channel = input[1] - '0';
 
     int offset = 0;
     for (int i = 2; i < input_length; i++) {
@@ -56,23 +58,28 @@ struct tcode_command_t process_tcode(uint8_t* input, uint16_t input_length) {
         switch(index) {
             case 'S':
             case 's':
-                command.time_command = MAG_SPEED;
-                buffer_which = 1;
+                command.time_command = MAGNITUDE_SPEED;
+                buffer_which = true;
                 offset = strlen(buffer0) + 1; 
                 break;
             case 'I':
             case 'i':
-                command.time_command = MAG_TIME;
-                buffer_which = 1;
+                command.time_command = MAGNITUDE_TIME;
+                buffer_which = true;
                 offset = strlen(buffer0) + 1;
                 break;
+            case '\n':
+                break;
             default:
-                if (!buffer_which) {
-                    buffer0[i] = index;
+                if (!buffer_which){
+                    buffer0[i - 2] = index;
                 } else {
-                    buffer1[i - offset] = index;
+                    buffer1[i - offset - 2] = index;
                 }
                 break;
         }
     }
+    command.magnitude = (atof(buffer0) / 100);
+    command.time = atof(buffer1);
+    return command;
 }

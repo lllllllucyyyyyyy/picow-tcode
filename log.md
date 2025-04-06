@@ -14,3 +14,6 @@ Turns out literally printing the incoming buffer let me see the strings coming i
 
 ## later
 The t-code decoder? is coming along well. I felt like spitting out a custom object with all the details would be the easiest to implement across various devices without overcomplicating things tooo much. I was considering callbacks, but an object is a bit cleaner to implement on the device code end.
+
+# 4/6/25
+Busy day yesterday, so no updates, but the functionality of both the t-code processor and the bluetooth callbacks are complete. All that is left is to implement some functionality to actually use the incoming data, for which I plan to implement a simple dual-vibration system. Hopefully I can demonstrate a way to add in serial support as well.
