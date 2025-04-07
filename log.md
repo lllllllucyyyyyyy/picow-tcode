@@ -17,3 +17,6 @@ The t-code decoder? is coming along well. I felt like spitting out a custom obje
 
 # 4/6/25
 Busy day yesterday, so no updates, but the functionality of both the t-code processor and the bluetooth callbacks are complete. All that is left is to implement some functionality to actually use the incoming data, for which I plan to implement a simple dual-vibration system. Hopefully I can demonstrate a way to add in serial support as well.
+
+# 4/7/25
+I added a quick pwm-based example for vibration motors, but it's untested for now, until I get around to putting together a circuit for it.

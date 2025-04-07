@@ -49,7 +49,8 @@ target_link_libraries(picoBT
     pico_stdlib
     pico_btstack_ble
     pico_btstack_cyw43
-    pico_cyw43_arch_none)
+    pico_cyw43_arch_none
+    hardware_pwm)
 
     
     # Add the standard include files to the build
