@@ -20,3 +20,4 @@ Busy day yesterday, so no updates, but the functionality of both the t-code proc
 
 # 4/7/25
 I added a quick pwm-based example for vibration motors, but it's untested for now, until I get around to putting together a circuit for it.
+Separating the header files from the code is... tricky and annoying, and I'm debating if it's even worthwhile.
