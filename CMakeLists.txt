@@ -35,7 +35,8 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(picoBT main.c )
+add_executable(picoBT main.c
+servo.c)
 
 pico_set_program_name(picoBT "picoBT")
 pico_set_program_version(picoBT "0.1")
@@ -49,7 +50,8 @@ target_link_libraries(picoBT
     pico_stdlib
     pico_btstack_ble
     pico_btstack_cyw43
-    pico_cyw43_arch_none)
+    pico_cyw43_arch_none
+    hardware_pwm)
 
     
     # Add the standard include files to the build
