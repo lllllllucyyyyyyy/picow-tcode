@@ -1,4 +1,4 @@
-# Pico W T-Code (work in progress)
+# Pico W T-Code
 ## and general serial over gatt starting point, I guess.
 
 This project is (or at least will be) a decently-documented T-Code implementation for the pico w that works over bluetooth, with the intention to connect to intiface. The T code and Bluetooth sections will be separate, so that either one can be adapted into individual projects if desired. Serial support is also implemented and functional.
