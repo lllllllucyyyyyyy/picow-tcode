@@ -29,6 +29,7 @@ int main()
 
     //initialization stuff
     stdio_init_all();
+    servo_init();
     //ble_init();
     //vibe_init();
 
