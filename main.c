@@ -1,79 +1,44 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-
-#include "bluetooth_manager.h"
-#include "tcode_processor.h"
-
 #include "hardware/pwm.h"
 #include <tusb.h>
 
-uint slice_num;
+#include "bluetooth_manager.h"
+#include "tcode_processor.h"
+#include "vibecontrol.h"
 
+char message[15];
+unsigned int message_pos = 0;
+
+//this gets called whenever we receive a command, either from serial or bluetooth
+//since the format from either is the same, we can use the same processing.
 void route_data(uint8_t *buffer, uint8_t length)
 {
     struct tcode_command_t command = process_tcode(buffer, length);
     if (command.axis == VIBRATION)
     {
-        if (command.magnitude == 0)
-        {
-            switch (command.channel)
-            {
-            case 0:
-                pwm_set_chan_level(slice_num, PWM_CHAN_A, 0);
-                break;
-            case 1:
-                pwm_set_chan_level(slice_num, PWM_CHAN_B, 0);
-                break;
-            }
-        }
-        else
-        {
-            int vel = (command.magnitude * 60) + 40;
-            switch (command.channel)
-            {
-            case 0:
-                pwm_set_chan_level(slice_num, PWM_CHAN_A, vel);
-                break;
-            case 1:
-                pwm_set_chan_level(slice_num, PWM_CHAN_B, vel);
-                break;
-            }
-        }
+        vibe_command(command.channel, command.magnitude);
     }
 }
 
 int main()
 {
+    //set the write callback for bluetooth
+    //through c fuckery, the bluetooth library calls this function on a write request
+    bt_string_get_callback = *route_data;
+
+    //initialization stuff
     stdio_init_all();
-
-    if (cyw43_arch_init())
-    {
-        printf("failed to initialise cyw43_arch\n");
-        return -1;
-    }
-    else
-    {
-        printf("initialization successful");
-    }
-
-    gpio_set_function(2, GPIO_FUNC_PWM);
-    gpio_set_function(3, GPIO_FUNC_PWM);
-
-    slice_num = pwm_gpio_to_slice_num(2);
-    pwm_set_wrap(slice_num, 100);
-    pwm_set_enabled(slice_num, true);
-
     ble_init();
+    vibe_init();
 
     printf("running");
 
-    bt_string_get_callback = *route_data;
-
-    static char message[15];
-    static unsigned int message_pos = 0;
 
     while (true)
     {
+        //getchar, annoyingly, waits for a char to become available, and thus normally blocks the code.
+        //tud cdc only runs when serial data is actually available, preventing blocking
         while (tud_cdc_available())
         {
             char inByte = getchar();
