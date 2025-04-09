@@ -36,8 +36,11 @@ pico_sdk_init()
 # Add executable. Default name is the project name, version 0.1
 
 add_executable(picoBT main.c
-servo.c
-tcode_processor.c)
+lib/bluetooth/bluetooth_manager.c
+#lib/vibecontrol/vibecontrol.c
+lib/servo_controller/servo_controller.c
+lib/servo_controller/servo.c
+lib/tcode/tcode_processor.c)
 
 pico_set_program_name(picoBT "picoBT")
 pico_set_program_version(picoBT "0.1")
@@ -60,6 +63,6 @@ target_include_directories(picoBT PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}
     )
     
-pico_btstack_make_gatt_header(picoBT PRIVATE "${CMAKE_CURRENT_LIST_DIR}/gatt.gatt")
+pico_btstack_make_gatt_header(picoBT PRIVATE "${CMAKE_CURRENT_LIST_DIR}/lib/bluetooth/gatt.gatt")
 pico_add_extra_outputs(picoBT)
 

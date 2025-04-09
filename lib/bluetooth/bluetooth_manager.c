@@ -1,15 +1,12 @@
 #include "pico/cyw43_arch.h"
 
-// BT stack headers
 #include "btstack.h"
 #include "btstack_run_loop.h"
 #include "ble/gatt-service/battery_service_server.h"
 
-//#include "gatt.h"
-
-//#include "gatt_management.h"
-
 #include "gatt.h"
+
+#include "bluetooth_manager.h"
 
 static btstack_timer_source_t heartbeat;
 static int le_notification_enabled;
@@ -19,29 +16,31 @@ static int val = 5;
 static char val_str[30];
 static int val_len;
 
-void (*bt_string_get_callback)(uint8_t*, uint8_t);
-//Zack Freedman reference?
-
 #define APP_AD_FLAGS 0x06
 
 
-static void heartbeat_handler(struct btstack_timer_source *ts) {
+//bit of leftover code from the example i used, but it doesn't cause issues so it stays.
+//idk what happens if i remove it, but if someone finds it doesn't matter i'll remove it
+static void heartbeat_handler(struct btstack_timer_source *ts)
+{
     static uint32_t counter = 0;
     counter++;
 
     // Update the temp every 10s
-    if (counter % 10 == 0) {
-        if (le_notification_enabled) {
+    if (counter % 10 == 0)
+    {
+        if (le_notification_enabled)
+        {
             att_server_request_can_send_now_event(con_handle);
         }
     }
 
-    // Invert the led
-    // Restart timer
     btstack_run_loop_set_timer(ts, 1000);
     btstack_run_loop_add_timer(ts);
 }
 
+//this bit controlls the advretised data. idk what happens when the local name doesn't match the gatt file
+//but frankly, i don't care
 static uint8_t adv_data[] = {
     // Flags general discoverable
     0x02, BLUETOOTH_DATA_TYPE_FLAGS, APP_AD_FLAGS,
@@ -52,6 +51,7 @@ static uint8_t adv_data[] = {
 };
 static const uint8_t adv_data_len = sizeof(adv_data);
 
+//this processes internal packets, anything that isn't read or write. idk how or why it works to be honest
 static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
     UNUSED(channel);
     UNUSED(size);
@@ -90,6 +90,7 @@ static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *pack
     }
 }
 
+//more template code from the example, maybe i'll delete it eventually
 static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, uint8_t *buffer, uint16_t buffer_size)
 {
     UNUSED(connection_handle);
@@ -103,6 +104,7 @@ static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t a
     return 0;
 }
 
+//ahh, finally, the bit of code we actually care about.
 static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, uint16_t offset, uint8_t *buffer, uint16_t buffer_size)
 {
     UNUSED(transaction_mode);
@@ -117,7 +119,7 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
         case ATT_CHARACTERISTIC_F0DAC9F2_06B0_4725_A80A_FF083A09A857_01_VALUE_HANDLE:
             uint8_t* data;
             data = buffer;
-            bt_string_get_callback(buffer, buffer_size);
+            string_get_callback(buffer, buffer_size);
             break;
         default:
             break;
@@ -127,25 +129,40 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
 
 static btstack_packet_callback_registration_t hci_event_callback_registration;
 
-static void ble_init(void){
+//name should be self explanatory here
+void ble_init(void)
+{
+    //boot up the bluetooth chip in the board
+    if (cyw43_arch_init())
+    {
+        printf("failed to initialise cyw43_arch\n");
+    }
+    else
+    {
+        printf("initialization successful");
+    }
 
+    //idk what this does
     l2cap_init();
 
-    // setup SM: Display only
+    // enables devices to see and read/write data
     sm_init();
 
-    // setup ATT server
-    att_server_init(profile_data, att_read_callback, att_write_callback);    
+    // setup callbacks for different commands
+    att_server_init(profile_data, att_read_callback, att_write_callback);
 
-    // register for HCI events
+    // register for non-rw packets
     hci_event_callback_registration.callback = &packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);
 
-    // register for ATT event
+    // register for non-rw commands
     att_server_register_packet_handler(packet_handler);
 
+    //init the heartbeat process
     heartbeat.process = &heartbeat_handler;
     btstack_run_loop_set_timer(&heartbeat, 1000);
     btstack_run_loop_add_timer(&heartbeat);
+
+    //its aliiiiiiiiiiive!
     hci_power_control(HCI_POWER_ON);
 }
