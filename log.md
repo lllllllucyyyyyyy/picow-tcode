@@ -27,3 +27,4 @@ The code is finished and fully functional! I went and added serial support for s
 
 # 4/9/25
 I decided to try and separate the commands used by the input in order to make maintaining forking a bit more simple.
+Using the void pointer was giving me too many issues, so I just decided to (ab)use the way that compilers reference commands to call my processing command.

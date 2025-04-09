@@ -1,15 +1,23 @@
 #include "pico/cyw43_arch.h"
+
+#include "btstack.h"
 #include "btstack_run_loop.h"
 #include "ble/gatt-service/battery_service_server.h"
 
-#include "bluetooth_manager.h"
 #include "gatt.h"
+
+#include "bluetooth_manager.h"
+
+static btstack_timer_source_t heartbeat;
+static int le_notification_enabled;
+static hci_con_handle_t con_handle;
 
 static int val = 5;
 static char val_str[30];
 static int val_len;
 
 #define APP_AD_FLAGS 0x06
+
 
 //bit of leftover code from the example i used, but it doesn't cause issues so it stays.
 //idk what happens if i remove it, but if someone finds it doesn't matter i'll remove it
@@ -44,45 +52,41 @@ static uint8_t adv_data[] = {
 static const uint8_t adv_data_len = sizeof(adv_data);
 
 //this processes internal packets, anything that isn't read or write. idk how or why it works to be honest
-static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size)
-{
+static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
     UNUSED(channel);
     UNUSED(size);
     bd_addr_t local_addr;
 
-    if (packet_type != HCI_EVENT_PACKET)
-        return;
+    if (packet_type != HCI_EVENT_PACKET) return;
+    
+    switch (hci_event_packet_get_type(packet)) {
+        case BTSTACK_EVENT_STATE:
+            if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING) return;
+            gap_local_bd_addr(local_addr);
+            printf("BTstack up and running on %s.\n", bd_addr_to_str(local_addr));
 
-    switch (hci_event_packet_get_type(packet))
-    {
-    case BTSTACK_EVENT_STATE:
-        if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
-            return;
-        gap_local_bd_addr(local_addr);
-        printf("BTstack up and running on %s.\n", bd_addr_to_str(local_addr));
+            // setup advertisements
+            uint16_t adv_int_min = 800;
+            uint16_t adv_int_max = 800;
+            uint8_t adv_type = 0;
+            bd_addr_t null_addr;
+            memset(null_addr, 0, 6);
+            gap_advertisements_set_params(adv_int_min, adv_int_max, adv_type, 0, null_addr, 0x07, 0x00);
+            assert(adv_data_len <= 31); // ble limitation
+            gap_advertisements_set_data(adv_data_len, (uint8_t*) adv_data);
+            gap_advertisements_enable(1);
 
-        // setup advertisements
-        uint16_t adv_int_min = 800;
-        uint16_t adv_int_max = 800;
-        uint8_t adv_type = 0;
-        bd_addr_t null_addr;
-        memset(null_addr, 0, 6);
-        gap_advertisements_set_params(adv_int_min, adv_int_max, adv_type, 0, null_addr, 0x07, 0x00);
-        assert(adv_data_len <= 31); // ble limitation
-        gap_advertisements_set_data(adv_data_len, (uint8_t *)adv_data);
-        gap_advertisements_enable(1);
-
-        break;
-    case HCI_EVENT_DISCONNECTION_COMPLETE:
-        le_notification_enabled = 0;
-        cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, false);
-        break;
-    case ATT_EVENT_CAN_SEND_NOW:
-        printf("notif sent");
-        att_server_notify(con_handle, ATT_CHARACTERISTIC_F0DAC9F1_06B0_4725_A80A_FF083A09A857_01_VALUE_HANDLE, (uint8_t *)val_str, val_len);
-        break;
-    default:
-        break;
+            break;
+        case HCI_EVENT_DISCONNECTION_COMPLETE:
+            le_notification_enabled = 0;
+            cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, false);
+            break;
+        case ATT_EVENT_CAN_SEND_NOW:
+            printf("notif sent");
+            att_server_notify(con_handle, ATT_CHARACTERISTIC_F0DAC9F1_06B0_4725_A80A_FF083A09A857_01_VALUE_HANDLE, (uint8_t*) val_str, val_len);
+            break;
+        default:
+            break;
     }
 }
 
@@ -94,6 +98,7 @@ static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t a
     if (att_handle == ATT_CHARACTERISTIC_F0DAC9F1_06B0_4725_A80A_FF083A09A857_01_VALUE_HANDLE)
     {
         val_len = snprintf(val_str, sizeof(val_str), "BTstack counter %04u", val);
+        printf("sent packet");
         return att_read_callback_handle_blob((const uint8_t *)val, val_len, offset, buffer, buffer_size);
     }
     return 0;
@@ -105,29 +110,24 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
     UNUSED(transaction_mode);
     UNUSED(offset);
 
-    //turns on the led so we know it's working :)
     cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, true);
-
-    switch (att_handle)
-    {
-        //config handle for enabling/disabling ble notifications
-        //enabling notifications is what "connects" intiface to the device
+    switch (att_handle){
         case ATT_CHARACTERISTIC_F0DAC9F1_06B0_4725_A80A_FF083A09A857_01_CLIENT_CONFIGURATION_HANDLE:
             le_notification_enabled = little_endian_read_16(buffer, 0) == GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION;
             con_handle = connection_handle;
             break;
-        //my little bit of magic, calls a callback whenever the value is written, and supplies a copy of the buffer
-        //the buffer, in this case, is a string containing the command. thats it.
         case ATT_CHARACTERISTIC_F0DAC9F2_06B0_4725_A80A_FF083A09A857_01_VALUE_HANDLE:
-            uint8_t *data;
+            uint8_t* data;
             data = buffer;
-            bt_string_get_callback(buffer, buffer_size);
+            string_get_callback(buffer, buffer_size);
             break;
         default:
             break;
     }
     return 0;
 }
+
+static btstack_packet_callback_registration_t hci_event_callback_registration;
 
 //name should be self explanatory here
 void ble_init(void)
@@ -136,7 +136,6 @@ void ble_init(void)
     if (cyw43_arch_init())
     {
         printf("failed to initialise cyw43_arch\n");
-        return -1;
     }
     else
     {

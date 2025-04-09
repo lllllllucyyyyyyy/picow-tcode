@@ -12,7 +12,7 @@ unsigned int message_pos = 0;
 
 //this gets called whenever we receive a command, either from serial or bluetooth
 //since the format from either is the same, we can use the same processing.
-void route_data(uint8_t *buffer, uint8_t length)
+void string_get_callback(uint8_t *buffer, uint8_t length)
 {
     struct tcode_command_t command = process_tcode(buffer, length);
     if (command.axis == VIBRATION)
@@ -25,7 +25,6 @@ int main()
 {
     //set the write callback for bluetooth
     //through c fuckery, the bluetooth library calls this function on a write request
-    bt_string_get_callback = *route_data;
 
     //initialization stuff
     stdio_init_all();
@@ -45,7 +44,7 @@ int main()
             if (inByte == '\n')
             {
                 message[message_pos] = '\0';
-                route_data((uint8_t *)message, message_pos);
+                string_get_callback((uint8_t *)message, message_pos);
                 message_pos = 0;
             }
             else
