@@ -5,9 +5,13 @@
 #include "tcode_processor.h"
 
 #include "hardware/pwm.h"
+#include <tusb.h>
+
+uint slice_num;
 
 void route_data(uint8_t *buffer, uint8_t length)
 {
+    struct tcode_command_t command = process_tcode(buffer, length);
     if (command.axis == VIBRATION)
     {
         if (command.magnitude == 0)
@@ -28,7 +32,7 @@ void route_data(uint8_t *buffer, uint8_t length)
             switch (command.channel)
             {
             case 0:
-                pwm_set_chan_level(slice_num, PWM_CHAN_A, vel;
+                pwm_set_chan_level(slice_num, PWM_CHAN_A, vel);
                 break;
             case 1:
                 pwm_set_chan_level(slice_num, PWM_CHAN_B, vel);
@@ -54,9 +58,8 @@ int main()
 
     gpio_set_function(2, GPIO_FUNC_PWM);
     gpio_set_function(3, GPIO_FUNC_PWM);
-    pwm_config config = pwm_get_default_config();
 
-    uint slice_num = pwm_gpio_to_slice_num(2);
+    slice_num = pwm_gpio_to_slice_num(2);
     pwm_set_wrap(slice_num, 100);
     pwm_set_enabled(slice_num, true);
 
