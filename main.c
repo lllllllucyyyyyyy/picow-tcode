@@ -34,7 +34,9 @@ int main()
     {
         printf("failed to initialise cyw43_arch\n");
         return -1;
-    }else{
+    }
+    else
+    {
         printf("initialization successful");
     }
 
@@ -70,6 +72,26 @@ int main()
     }
     // bt_string_get_callback = *route_data;
 
+    static char message[15];
+    static unsigned int message_pos = 0;
+
+    while (true)
+    {
+        while (tud_cdc_available())
+        {
+            char inByte = getchar();
+            if (inByte == '\n')
+            {
+                message[message_pos] = '\0';
+                route_data((uint8_t *)message, message_pos);
+                message_pos = 0;
+            }
+            else
+            {
+                message[message_pos] = inByte;
+                message_pos++;
+            }
+        }
     setServo(servoPin0, zero);
     setServo(servoPin1, zero);
 
