@@ -3,6 +3,7 @@
 
 #include "pico/stdlib.h"
 
+//define our axes
 enum axis_t {
     LINEAR,
     ROTATION,
@@ -10,11 +11,13 @@ enum axis_t {
     AUXILLARY
 };
 
+//define possible time commands
 enum time_command_t {
     MAGNITUDE_TIME,
     MAGNITUDE_SPEED
 };
 
+//our custom type, containing openings for all the traits of a command
 struct tcode_command_t {
     enum axis_t axis;
     int channel;
