@@ -1,0 +1,46 @@
+"tcode-v03": {
+  "defaults": {
+    "name": "TCode v0.3 (Single Linear Axis)",
+    "features": [
+      {
+        "feature-type": "Vibrate",
+        "actuator": {
+          "step-range": [
+            0,
+            100
+          ],
+          "messages": [
+            "ScalarCmd"
+          ]
+        }
+      },
+      {
+        "feature-type": "Vibrate",
+        "actuator": {
+          "step-range": [
+            0,
+            100
+          ],
+          "messages": [
+            "ScalarCmd"
+          ]
+        }
+      }
+    ]
+  },
+  "communication": [
+    {
+      "btle": {
+        "names": [
+          "pico*"
+        ],
+        "services": {
+          "f0dac9f0-06b0-4725-a80a-ff083a09a857": {
+            "tx": "f0dac9f2-06b0-4725-a80a-ff083a09a857",
+            "rx": "f0dac9f1-06b0-4725-a80a-ff083a09a857"
+          }
+        }
+      }
+    }
+  ]
+},
