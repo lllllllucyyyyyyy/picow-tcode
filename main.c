@@ -3,9 +3,9 @@
 #include "hardware/pwm.h"
 #include <tusb.h>
 
-#include "bluetooth_manager.h"
-#include "tcode_processor.h"
-#include "vibecontrol.h"
+#include "lib/bluetooth/bluetooth_manager.h"
+#include "lib/tcode/tcode_processor.h"
+#include "lib/vibecontrol/vibecontrol.h"
 
 char message[15];
 unsigned int message_pos = 0;
