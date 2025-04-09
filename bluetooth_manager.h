@@ -2,7 +2,6 @@
 #include "btstack_run_loop.h"
 #include "ble/gatt-service/battery_service_server.h"
 
-#include "bluetooth_manager.h"
 #include "gatt.h"
 
 static int val = 5;
