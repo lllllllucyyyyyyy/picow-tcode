@@ -6,6 +6,38 @@
 
 #include "hardware/pwm.h"
 
+void route_data(uint8_t *buffer, uint8_t length)
+{
+    if (command.axis == VIBRATION)
+    {
+        if (command.magnitude == 0)
+        {
+            switch (command.channel)
+            {
+            case 0:
+                pwm_set_chan_level(slice_num, PWM_CHAN_A, 0);
+                break;
+            case 1:
+                pwm_set_chan_level(slice_num, PWM_CHAN_B, 0);
+                break;
+            }
+        }
+        else
+        {
+            int vel = (command.magnitude * 60) + 40;
+            switch (command.channel)
+            {
+            case 0:
+                pwm_set_chan_level(slice_num, PWM_CHAN_A, vel;
+                break;
+            case 1:
+                pwm_set_chan_level(slice_num, PWM_CHAN_B, vel);
+                break;
+            }
+        }
+    }
+}
+
 int main()
 {
     stdio_init_all();
@@ -32,37 +64,6 @@ int main()
 
     printf("running");
 
-    void route_data(uint8_t *buffer, uint8_t length)
-    {
-        if (command.axis == VIBRATION)
-        {
-            if (command.magnitude == 0)
-            {
-                switch (command.channel)
-                {
-                case 0:
-                    pwm_set_chan_level(slice_num, PWM_CHAN_A, 0);
-                    break;
-                case 1:
-                    pwm_set_chan_level(slice_num, PWM_CHAN_B, 0);
-                    break;
-                }
-            }
-            else
-            {
-                int vel = (command.magnitude * 60) + 40;
-                switch (command.channel)
-                {
-                case 0:
-                    pwm_set_chan_level(slice_num, PWM_CHAN_A, vel;
-                    break;
-                case 1:
-                    pwm_set_chan_level(slice_num, PWM_CHAN_B, vel);
-                    break;
-                }
-            }
-        }
-    }
     bt_string_get_callback = *route_data;
 
     static char message[15];
