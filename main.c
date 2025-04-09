@@ -22,9 +22,11 @@ int main()
 
     gpio_set_function(2, GPIO_FUNC_PWM);
     gpio_set_function(3, GPIO_FUNC_PWM);
+    pwm_config config = pwm_get_default_config();
 
     uint slice_num = pwm_gpio_to_slice_num(2);
     pwm_set_wrap(slice_num, 100);
+    pwm_set_enabled(slice_num, true);
 
     ble_init();
 
@@ -32,31 +34,56 @@ int main()
 
     void route_data(uint8_t *buffer, uint8_t length)
     {
-        struct tcode_command_t command = process_tcode(buffer, length);
-        printf("ran callback \n");
-        printf("axis %d \n", command.axis);
-        printf("channel %d \n", command.channel);
-        printf("magnitude %f \n", command.magnitude);
-        printf("time command %d \n", command.time_command);
-        printf("time %ds \n", command.time);
-
         if (command.axis == VIBRATION)
         {
-            switch (command.channel)
+            if (command.magnitude == 0)
             {
-            case 0:
-                pwm_set_chan_level(slice_num, PWM_CHAN_A, command.magnitude * 100);
-                break;
-            case 1:
-                pwm_set_chan_level(slice_num, PWM_CHAN_B, command.magnitude * 100);
-                break;
+                switch (command.channel)
+                {
+                case 0:
+                    pwm_set_chan_level(slice_num, PWM_CHAN_A, 0);
+                    break;
+                case 1:
+                    pwm_set_chan_level(slice_num, PWM_CHAN_B, 0);
+                    break;
+                }
+            }
+            else
+            {
+                int vel = (command.magnitude * 60) + 40;
+                switch (command.channel)
+                {
+                case 0:
+                    pwm_set_chan_level(slice_num, PWM_CHAN_A, vel;
+                    break;
+                case 1:
+                    pwm_set_chan_level(slice_num, PWM_CHAN_B, vel);
+                    break;
+                }
             }
         }
     }
     bt_string_get_callback = *route_data;
 
+    static char message[15];
+    static unsigned int message_pos = 0;
+
     while (true)
     {
-        sleep_ms(1000);
+        while (tud_cdc_available())
+        {
+            char inByte = getchar();
+            if (inByte == '\n')
+            {
+                message[message_pos] = '\0';
+                route_data((uint8_t *)message, message_pos);
+                message_pos = 0;
+            }
+            else
+            {
+                message[message_pos] = inByte;
+                message_pos++;
+            }
+        }
     }
 }

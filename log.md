@@ -21,3 +21,6 @@ Busy day yesterday, so no updates, but the functionality of both the t-code proc
 # 4/7/25
 I added a quick pwm-based example for vibration motors, but it's untested for now, until I get around to putting together a circuit for it.
 Separating the header files from the code is... tricky and annoying, and I'm debating if it's even worthwhile.
+
+# 4/8/25
+The code is finished and fully functional! I went and added serial support for shits and giggles as well, which is implemented in a way to use the same tcode processor as over bluetooth. Over the coming days, I'll work on documenting the code and possibly reformatting it a tad to make it less confusing. A servo example branch has also been added (born out of... ~personal matters~ but the source code might as well be public) which is almost the exact same as the vibration example, but with bluetooth disabled due to it being on a non-pico rp2040 board.

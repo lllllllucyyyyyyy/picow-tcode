@@ -59,6 +59,6 @@ struct tcode_command_t process_tcode(uint8_t* input, uint16_t input_length) {
         }
     }
     command.magnitude = (atof(buffer0) / 100);
-    command.time = atof(buffer1);
+    command.time = atoi(buffer1);
     return command;
 }
