@@ -3,7 +3,7 @@
 #include "hardware/pwm.h"
 
 //the zero value is the minimum value needed to spin up the motor.
-static const int zero = 40;
+static const int zero = 25;
 uint slice_num;
 
 void vibe_init()
@@ -18,7 +18,7 @@ void vibe_init()
 
 void vibe_command(int channel, float input)
 {
-    int mag = (100 - zero) * input;
+    int mag = ((100 - zero) * input * input * input) + zero;
     if (input == 0)
     {
         mag = 0;

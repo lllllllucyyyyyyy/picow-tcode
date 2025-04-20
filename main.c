@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include "pico/cyw43_arch.h"
 #include "hardware/pwm.h"
 #include <tusb.h>
 
@@ -10,8 +11,8 @@
 char message[15];
 unsigned int message_pos = 0;
 
-//this gets called whenever we receive a command, either from serial or bluetooth
-//since the format from either is the same, we can use the same processing.
+// this gets called whenever we receive a command, either from serial or bluetooth
+// since the format from either is the same, we can use the same processing.
 void string_get_callback(uint8_t *buffer, uint8_t length)
 {
     struct tcode_command_t command = process_tcode(buffer, length);
@@ -19,25 +20,32 @@ void string_get_callback(uint8_t *buffer, uint8_t length)
     {
         vibe_command(command.channel, command.magnitude);
     }
+    if (command.magnitude == 0)
+    {
+        cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, false);
+    }
+    else
+    {
+        cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, true);
+    }
 }
 
 int main()
 {
-    //set the write callback for bluetooth
-    //through c fuckery, the bluetooth library calls this function on a write request
+    // set the write callback for bluetooth
+    // through c fuckery, the bluetooth library calls this function on a write request
 
-    //initialization stuff
+    // initialization stuff
     stdio_init_all();
     ble_init();
     vibe_init();
 
     printf("running");
 
-
     while (true)
     {
-        //getchar, annoyingly, waits for a char to become available, and thus normally blocks the code.
-        //tud cdc only runs when serial data is actually available, preventing blocking
+        // getchar, annoyingly, waits for a char to become available, and thus normally blocks the code.
+        // tud cdc only runs when serial data is actually available, preventing blocking
         while (tud_cdc_available())
         {
             char inByte = getchar();

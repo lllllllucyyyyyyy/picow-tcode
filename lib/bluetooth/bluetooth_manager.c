@@ -79,7 +79,6 @@ static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *pack
             break;
         case HCI_EVENT_DISCONNECTION_COMPLETE:
             le_notification_enabled = 0;
-            cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, false);
             break;
         case ATT_EVENT_CAN_SEND_NOW:
             printf("notif sent");
@@ -110,7 +109,6 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
     UNUSED(transaction_mode);
     UNUSED(offset);
 
-    cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, true);
     switch (att_handle){
         case ATT_CHARACTERISTIC_F0DAC9F1_06B0_4725_A80A_FF083A09A857_01_CLIENT_CONFIGURATION_HANDLE:
             le_notification_enabled = little_endian_read_16(buffer, 0) == GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION;
